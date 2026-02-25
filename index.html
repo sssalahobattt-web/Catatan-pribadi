@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catatan Rahasia Saya</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <style>
+        .hidden { display: none; }
+        .note-card { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius: 8px; }
+        #login-container { max-width: 400px; margin: 50px auto; }
+    </style>
+</head>
+<body>
+
+    <main class="container">
+        <article id="login-container">
+            <h3>🔒 Masuk</h3>
+            <input type="password" id="password-input" placeholder="Masukkan PIN/Password">
+            <button onclick="checkLogin()">Buka Catatan</button>
+            <p id="error-msg" style="color: red;" class="hidden">Password Salah!</p>
+        </article>
+
+        <section id="notes-section" class="hidden">
+            <nav>
+                <ul><li><strong>Buku Catatan Digital</strong></li></ul>
+                <ul><li><a href="#" onclick="logout()" class="secondary">Logout</a></li></ul>
+            </nav>
+
+            <textarea id="note-input" placeholder="Tulis sesuatu..."></textarea>
+            <button onclick="addNote()">Simpan Catatan</button>
+
+            <hr>
+
+            <div id="notes-list">
+                </div>
+        </section>
+    </main>
+
+    <script>
+        const PIN = "1234"; // Ganti ini dengan password pilihanmu!
+
+        function checkLogin() {
+            const pass = document.getElementById('password-input').value;
+            if(pass === PIN) {
+                document.getElementById('login-container').classList.add('hidden');
+                document.getElementById('notes-section').classList.remove('hidden');
+                loadNotes();
+            } else {
+                document.getElementById('error-msg').classList.remove('hidden');
+            }
+        }
+
+        function addNote() {
+            const text = document.getElementById('note-input').value;
+            if(!text) return;
+
+            let notes = JSON.parse(localStorage.getItem('myNotes') || '[]');
+            notes.unshift({ id: Date.now(), content: text });
+            localStorage.setItem('myNotes', JSON.stringify(notes));
+            
+            document.getElementById('note-input').value = '';
+            loadNotes();
+        }
+
+        function loadNotes() {
+            const list = document.getElementById('notes-list');
+            let notes = JSON.parse(localStorage.getItem('myNotes') || '[]');
+            list.innerHTML = notes.map(n => `
+                <div class="note-card">
+                    <p>${n.content}</p>
+                    <small onclick="deleteNote(${n.id})" style="color:red; cursor:pointer;">Hapus</small>
+                </div>
+            `).join('');
+        }
+
+        function deleteNote(id) {
+            let notes = JSON.parse(localStorage.getItem('myNotes') || '[]');
+            notes = notes.filter(n => n.id !== id);
+            localStorage.setItem('myNotes', JSON.stringify(notes));
+            loadNotes();
+        }
+
+        function logout() {
+            location.reload();
+        }
+    </script>
+</body>
+</html>
